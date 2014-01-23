@@ -4,9 +4,25 @@
 #include <QMainWindow>
 #include <QPointer>
 #include "tabdata.h"
+#include "singletont.h"
 
 class HeadBar;
 class Book;
+
+class Window;
+typedef QList<Window*> WindowList;
+
+class WindowsManager : public QObject, SingletonT<WindowsManager>
+{
+    Q_OBJECT
+
+public:
+    WindowsManager();
+    static void addWindow();
+    static WindowList windowList();
+    static void receiveTabPlace(const QPointF &globalPos, Window* &window, int &index);
+    static Window* findTabSite(const QUuid &tabUid);
+};
 
 class Window : public QMainWindow
 {
@@ -15,9 +31,16 @@ class Window : public QMainWindow
 public:
     Window(bool isPreviewMode);
     bool isPreviewMode() const;
-    void escapePreviewMode(const QPoint &globalPos);
     HeadBar* headBar() const;
     Book* book() const;
+
+public slots:
+    void addWindow();
+    void addTab();
+    void addDocument();
+    void closeWindow();
+    void closeTab();
+    void closeDocument();
 
 private slots:
     void onTabToBeActivated(int index);
@@ -26,24 +49,15 @@ private slots:
     void onTabToBeginDragging(QUuid uid);
     void onTabToContinueDragging(QUuid uid, QPointF globalPos);
     void onTabToBeDropped(QUuid uid, QPointF globalPos);
-    void addWindow();
     void onBookChanged();
-
-    void test1();
-    void test2();
-    void test3();
-    void test4();
-
+    void toggleFullScreen();
 
 private:
     bool m_isPreviewMode;
     HeadBar *m_headBar;
     Book *m_book;
     QPointer<Window> m_previewWindow;
-    typedef QList<Window*> WindowList;
-    static WindowList windowList();
-    static void receiveTabPlace(const QPointF &globalPos, Window* &window, int &index);
-    static Window* findTabSite(const QUuid &tabUid);
+    QAction *m_toggleFullScreenAction;
     void initializeCentralWidget();
     void initializeMenu();
 };

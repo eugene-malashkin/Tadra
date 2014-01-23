@@ -9,6 +9,79 @@
 
 #include <QDebug>
 
+//******************************************************************************************************
+/*!
+ *\class Windows
+ *\brief Менеджер окон.
+*/
+//******************************************************************************************************
+
+WindowsManager::WindowsManager()
+    : QObject()
+    , SingletonT<WindowsManager>()
+{
+
+}
+
+void WindowsManager::addWindow()
+{
+    Window *next = new Window(false);
+    next->show();
+}
+
+WindowList WindowsManager::windowList()
+{
+    WindowList result;
+    QWidgetList widgets = QApplication::topLevelWidgets();
+    foreach (QWidget *widget, widgets)
+    {
+        Window *window = qobject_cast<Window*>(widget);
+        if (window != NULL)
+        {
+            result << window;
+        }
+    }
+    return result;
+}
+
+void WindowsManager::receiveTabPlace(const QPointF &globalPos, Window* &window, int &index)
+{
+    window = NULL;
+    index = -1;
+    Window *candidate = qobject_cast<Window*>(QApplication::topLevelAt(globalPos.toPoint()));
+    if ((candidate != NULL) && (!candidate->isPreviewMode()))
+    {
+        index = candidate->headBar()->tabController()->dropIndex(globalPos);
+        if (index >= 0)
+        {
+            window = candidate;
+        }
+    }
+}
+
+Window* WindowsManager::findTabSite(const QUuid &tabUid)
+{
+    Window *result = NULL;
+    WindowList windows = windowList();
+    foreach (Window *window, windows)
+    {
+        if (window->book()->contains(tabUid))
+        {
+            result = window;
+            break;
+        }
+    }
+    return result;
+}
+
+
+//******************************************************************************************************
+/*!
+ *\class Window
+ *\brief Окно (главное).
+*/
+//******************************************************************************************************
+
 Window::Window(bool isPreviewMode)
     : QMainWindow(NULL, Qt::WindowFlags((isPreviewMode) ? Qt::FramelessWindowHint : 0))
     , m_isPreviewMode(isPreviewMode)
@@ -25,18 +98,6 @@ bool Window::isPreviewMode() const
     return m_isPreviewMode;
 }
 
-void Window::escapePreviewMode(const QPoint &globalPos)
-{
-    if (!m_isPreviewMode)
-    {
-        return;
-    }
-    m_isPreviewMode = false;
-    setWindowFlags(windowFlags() & (~Qt::FramelessWindowHint));
-    show();
-    move(globalPos);
-}
-
 HeadBar* Window::headBar() const
 {
     return m_headBar;
@@ -47,6 +108,36 @@ Book* Window::book() const
     return m_book;
 }
 
+void Window::addWindow()
+{
+    WindowsManager::addWindow();
+}
+
+void Window::addTab()
+{
+    book()->addSheet();
+}
+
+void Window::addDocument()
+{
+
+}
+
+void Window::closeWindow()
+{
+    close();
+}
+
+void Window::closeTab()
+{
+    book()->removeSheet(book()->currentIndex());
+}
+
+void Window::closeDocument()
+{
+
+}
+
 void Window::onTabToBeActivated(int index)
 {
     book()->setCurrentIndex(index);
@@ -54,7 +145,7 @@ void Window::onTabToBeActivated(int index)
 
 void Window::onTabToBeAdded()
 {
-    book()->addSheet();
+    addTab();
 }
 
 void Window::onTabToBeRemoved(int index)
@@ -69,12 +160,12 @@ void Window::onTabToBeginDragging(QUuid)
 
 void Window::onTabToContinueDragging(QUuid tabUid, QPointF globalPos)
 {
-    Window *fromWindow = findTabSite(tabUid);
+    Window *fromWindow = WindowsManager::findTabSite(tabUid);
     if (fromWindow != NULL)
     {
         Window *toWindow = NULL;
         int toIndex = -1;
-        receiveTabPlace(globalPos, toWindow, toIndex);
+        WindowsManager::receiveTabPlace(globalPos, toWindow, toIndex);
         if ((toWindow != NULL) && (toIndex >= 0))
         {
             // Перемещаем в существующее окно
@@ -120,20 +211,20 @@ void Window::onTabToBeDropped(QUuid tabUid, QPointF globalPos)
 {
     if (!m_previewWindow.isNull())
     {
-        Window *fromWindow = findTabSite(tabUid);
+        m_previewWindow->hide();
+        Window *fromWindow = WindowsManager::findTabSite(tabUid);
         if (fromWindow == m_previewWindow)
         {
-            m_previewWindow->escapePreviewMode(globalPos.toPoint());
-            m_previewWindow = NULL;
+            Window *newWindow = new Window(false);
+            newWindow->book()->moveSheet(fromWindow->book(), tabUid, 0);
+            newWindow->move(globalPos.toPoint());
+            newWindow->show();
         }
-        else
-        {
-            m_previewWindow->close();
-            m_previewWindow = NULL;
-        }
+        m_previewWindow->close();
+        m_previewWindow = NULL;
     }
 
-    WindowList windows = windowList();
+    WindowList windows = WindowsManager::windowList();
     foreach (Window *window, windows)
     {
         window->headBar()->tabController()->ceaseMoving();
@@ -148,82 +239,21 @@ void Window::onTabToBeDropped(QUuid tabUid, QPointF globalPos)
     }
 }
 
-void Window::addWindow()
-{
-    Window *next = new Window(false);
-    next->show();
-}
-
 void Window::onBookChanged()
 {
     headBar()->tabController()->setData(book()->tabData());
 }
 
-void Window::test1()
+void Window::toggleFullScreen()
 {
-    showFullScreen();
-}
-
-void Window::test2()
-{
-    showNormal();
-}
-
-void Window::test3()
-{
-    setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
-    show();
-}
-
-void Window::test4()
-{
-    setWindowFlags(windowFlags() & (~Qt::FramelessWindowHint));
-    show();
-}
-
-Window::WindowList Window::windowList()
-{
-    WindowList result;
-    QWidgetList widgets = QApplication::topLevelWidgets();
-    foreach (QWidget *widget, widgets)
+    if (!m_toggleFullScreenAction->isChecked())
     {
-        Window *window = qobject_cast<Window*>(widget);
-        if (window != NULL)
-        {
-            result << window;
-        }
+        showNormal();
     }
-    return result;
-}
-
-void Window::receiveTabPlace(const QPointF &globalPos, Window* &window, int &index)
-{
-    window = NULL;
-    index = -1;
-    Window *candidate = qobject_cast<Window*>(QApplication::topLevelAt(globalPos.toPoint()));
-    if ((candidate != NULL) && (!candidate->isPreviewMode()))
+    else
     {
-        index = candidate->headBar()->tabController()->dropIndex(globalPos);
-        if (index >= 0)
-        {
-            window = candidate;
-        }
+        showFullScreen();
     }
-}
-
-Window* Window::findTabSite(const QUuid &tabUid)
-{
-    Window *result = NULL;
-    WindowList windows = windowList();
-    foreach (Window *window, windows)
-    {
-        if (window->book()->contains(tabUid))
-        {
-            result = window;
-            break;
-        }
-    }
-    return result;
 }
 
 void Window::initializeCentralWidget()
@@ -247,18 +277,23 @@ void Window::initializeCentralWidget()
     m_book = new Book(this);
     connect(m_book, SIGNAL(changed()), this, SLOT(onBookChanged()));
     centralLayout->addWidget(m_book);
-
-    centralWidget->setVisible(true);
 }
 
 void Window::initializeMenu()
 {
     QMenu *fileMenu = menuBar()->addMenu("Файл");
-    QAction *addWindowAction = fileMenu->addAction("Новое окно");
-    connect(addWindowAction, SIGNAL(triggered()), this, SLOT(addWindow()));
+    fileMenu->addAction("Новое окно", this, SLOT(addWindow()), QKeySequence::New);
+    fileMenu->addAction("Новая вкладка", this, SLOT(addTab()), QKeySequence::AddTab);
+    fileMenu->addAction("Новый документ", this, SLOT(addDocument()), QKeySequence("Ctrl+D"));
+    fileMenu->addSeparator();
+    QString closeWindowKst("Alt+F4");
+#ifdef Q_OS_MAC
+    closeWindowKst = "Ctrl+Meta+W";
+#endif
+    fileMenu->addAction("Закрыть окно", this, SLOT(closeWindow()), QKeySequence(closeWindowKst));
+    fileMenu->addAction("Закрыть вкладку", this, SLOT(closeTab()), QKeySequence::Close);
 
-    connect(fileMenu->addAction("Test 1"), SIGNAL(triggered()), this, SLOT(test1()));
-    connect(fileMenu->addAction("Test 2"), SIGNAL(triggered()), this, SLOT(test2()));
-    connect(fileMenu->addAction("Test 3"), SIGNAL(triggered()), this, SLOT(test3()));
-    connect(fileMenu->addAction("Test 4"), SIGNAL(triggered()), this, SLOT(test4()));
+    QMenu *windowMenu = menuBar()->addMenu("Окно");
+    m_toggleFullScreenAction = windowMenu->addAction("Полноэкранный режим", this, SLOT(toggleFullScreen()), QKeySequence::FullScreen);
+    m_toggleFullScreenAction->setCheckable(true);
 }
