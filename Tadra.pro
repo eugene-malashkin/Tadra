@@ -4,6 +4,8 @@
 #
 #-------------------------------------------------
 
+cache()
+
 QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -38,3 +40,5 @@ HEADERS  += window.h \
 
 FORMS += \
     hintwindow.ui
+
+CONFIG += c++11
