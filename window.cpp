@@ -11,6 +11,7 @@
 
 Window::Window(bool isPreviewMode)
     : QMainWindow(NULL, Qt::WindowFlags((isPreviewMode) ? Qt::FramelessWindowHint : 0))
+    //: QMainWindow()
     , m_isPreviewMode(isPreviewMode)
     , m_headBar(NULL)
     , m_book(NULL)
@@ -20,7 +21,7 @@ Window::Window(bool isPreviewMode)
     initializeMenu();
     if (isPreviewMode)
     {
-        menuBar()->setVisible(false);
+        //menuBar()->setVisible(false);
     }
 }
 
@@ -31,9 +32,15 @@ bool Window::isPreviewMode() const
 
 void Window::escapePreviewMode()
 {
-    menuBar()->setVisible(true);
+    if (!m_isPreviewMode)
+    {
+        return;
+    }
+    m_isPreviewMode = false;
+    //menuBar()->setVisible(true);
     setWindowFlags(windowFlags() & (~Qt::FramelessWindowHint));
     show();
+    move(1, 1);
 }
 
 HeadBar* Window::headBar() const
@@ -119,6 +126,7 @@ void Window::onTabToBeDropped(QUuid tabUid, QPointF)
         else
         {
             m_previewWindow->deleteLater();
+            m_previewWindow = NULL;
         }
     }
 
