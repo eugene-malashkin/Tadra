@@ -127,7 +127,7 @@ void Window::onTabToBeDropped(QUuid tabUid, QPointF globalPos)
     WindowList windows = windowList();
     foreach (Window *window, windows)
     {
-        window->headBar()->tabController()->fixCurrentTab();
+        window->headBar()->tabController()->ceaseMoving();
     }
 }
 

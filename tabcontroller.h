@@ -12,6 +12,7 @@ public:
     virtual int dropIndex(const QPointF &globalPos) const = 0;
     virtual void moveCurrentTab(const QPointF &globalPos) = 0;
     virtual void fixCurrentTab() = 0;
+    virtual void ceaseMoving() = 0;
 };
 
 class TabController : public QObject, public TabResponsibility
@@ -26,6 +27,7 @@ public:
     int dropIndex(const QPointF &globalPos) const override;
     void moveCurrentTab(const QPointF &globalPos) override;
     void fixCurrentTab() override;
+    void ceaseMoving() override;
 
 signals:
     void tabToBeActivated(int index);

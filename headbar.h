@@ -18,6 +18,7 @@ public:
     int dropIndex(const QPointF &globalPos) const override;
     void moveCurrentTab(const QPointF &globalPos) override;
     void fixCurrentTab() override;
+    void ceaseMoving() override;
     TabController* tabController() const;
     void paint(QPainter *painter) override;
     void handleEvent(UserEvent event) override;

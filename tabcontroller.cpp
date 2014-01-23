@@ -43,3 +43,8 @@ void TabController::fixCurrentTab()
 {
     base()->fixCurrentTab();
 }
+
+void TabController::ceaseMoving()
+{
+    base()->ceaseMoving();
+}

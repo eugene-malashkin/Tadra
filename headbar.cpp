@@ -64,6 +64,24 @@ void TabBar::moveCurrentTab(const QPointF &globalPos)
 void TabBar::fixCurrentTab()
 {
     m_isMovingCurrentTab = false;
+    /*
+    m_movingCurrentTabPos = QPointF();
+    m_clickPoint = QPointF();
+    m_clickOffset = QPointF();
+    m_clickTabUid = QUuid();
+    m_isDragging = false;
+    */
+    redraw();
+}
+
+void TabBar::ceaseMoving()
+{
+    m_isMovingCurrentTab = false;
+    m_movingCurrentTabPos = QPointF();
+    m_clickPoint = QPointF();
+    m_clickOffset = QPointF();
+    m_clickTabUid = QUuid();
+    m_isDragging = false;
     redraw();
 }
 
