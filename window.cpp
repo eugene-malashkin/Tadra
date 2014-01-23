@@ -100,9 +100,18 @@ void Window::onTabToContinueDragging(QUuid tabUid, QPointF globalPos)
             {
                 fromWindow->headBar()->tabController()->fixCurrentTab();
             }
-            m_previewWindow->book()->moveSheet(fromWindow->book(), tabUid, 0);
-            m_previewWindow->move(globalPos.toPoint() + QPoint(20, 20));
-            m_previewWindow->show();
+            if (!m_previewWindow.isNull())
+            {
+                m_previewWindow->book()->moveSheet(fromWindow->book(), tabUid, 0);
+            }
+            if (!m_previewWindow.isNull())
+            {
+                m_previewWindow->move(globalPos.toPoint() + QPoint(20, 20));
+            }
+            if (!m_previewWindow.isNull())
+            {
+                m_previewWindow->show();
+            }
         }
     }
 }
