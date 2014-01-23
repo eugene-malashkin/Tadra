@@ -128,7 +128,7 @@ void Window::onTabToBeDropped(QUuid tabUid, QPointF globalPos)
         }
         else
         {
-            m_previewWindow->deleteLater();
+            m_previewWindow->close();
             m_previewWindow = NULL;
         }
     }
@@ -137,6 +137,14 @@ void Window::onTabToBeDropped(QUuid tabUid, QPointF globalPos)
     foreach (Window *window, windows)
     {
         window->headBar()->tabController()->ceaseMoving();
+    }
+
+    foreach (Window *window, windows)
+    {
+        if (window->book()->isEmpty())
+        {
+            window->close();
+        }
     }
 }
 

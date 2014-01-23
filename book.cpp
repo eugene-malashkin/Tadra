@@ -79,6 +79,11 @@ int Book::count() const
     return m_sheets.count();
 }
 
+bool Book::isEmpty() const
+{
+    return m_sheets.isEmpty();
+}
+
 SheetList Book::sheets() const
 {
     return m_sheets;

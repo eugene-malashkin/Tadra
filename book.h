@@ -18,6 +18,7 @@ public:
     void addSheet(const QString &label = QString());
     void removeSheet(int index, bool doDelete = true);
     int count() const;
+    bool isEmpty() const;
     SheetList sheets() const;
     void setCurrentIndex(int value);
     int currentIndex() const;
