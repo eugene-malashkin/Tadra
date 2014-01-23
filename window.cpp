@@ -11,7 +11,6 @@
 
 Window::Window(bool isPreviewMode)
     : QMainWindow(NULL, Qt::WindowFlags((isPreviewMode) ? Qt::FramelessWindowHint : 0))
-    //: QMainWindow()
     , m_isPreviewMode(isPreviewMode)
     , m_headBar(NULL)
     , m_book(NULL)
@@ -19,10 +18,6 @@ Window::Window(bool isPreviewMode)
 {
     initializeCentralWidget();
     initializeMenu();
-    if (isPreviewMode)
-    {
-        //menuBar()->setVisible(false);
-    }
 }
 
 bool Window::isPreviewMode() const
@@ -30,17 +25,16 @@ bool Window::isPreviewMode() const
     return m_isPreviewMode;
 }
 
-void Window::escapePreviewMode()
+void Window::escapePreviewMode(const QPoint &globalPos)
 {
     if (!m_isPreviewMode)
     {
         return;
     }
     m_isPreviewMode = false;
-    //menuBar()->setVisible(true);
     setWindowFlags(windowFlags() & (~Qt::FramelessWindowHint));
     show();
-    move(1, 1);
+    move(globalPos);
 }
 
 HeadBar* Window::headBar() const
@@ -113,14 +107,14 @@ void Window::onTabToContinueDragging(QUuid tabUid, QPointF globalPos)
     }
 }
 
-void Window::onTabToBeDropped(QUuid tabUid, QPointF)
+void Window::onTabToBeDropped(QUuid tabUid, QPointF globalPos)
 {
     if (!m_previewWindow.isNull())
     {
         Window *fromWindow = findTabSite(tabUid);
         if (fromWindow == m_previewWindow)
         {
-            m_previewWindow->escapePreviewMode();
+            m_previewWindow->escapePreviewMode(globalPos.toPoint());
             m_previewWindow = NULL;
         }
         else

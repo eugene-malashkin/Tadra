@@ -15,7 +15,7 @@ class Window : public QMainWindow
 public:
     Window(bool isPreviewMode);
     bool isPreviewMode() const;
-    void escapePreviewMode();
+    void escapePreviewMode(const QPoint &globalPos);
     HeadBar* headBar() const;
     Book* book() const;
 
