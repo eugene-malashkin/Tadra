@@ -64,13 +64,6 @@ void TabBar::moveCurrentTab(const QPointF &globalPos)
 void TabBar::fixCurrentTab()
 {
     m_isMovingCurrentTab = false;
-    /*
-    m_movingCurrentTabPos = QPointF();
-    m_clickPoint = QPointF();
-    m_clickOffset = QPointF();
-    m_clickTabUid = QUuid();
-    m_isDragging = false;
-    */
     redraw();
 }
 
@@ -100,7 +93,7 @@ void TabBar::paint(QPainter *painter)
     {
         if (i != data().currentIndex)
         {
-            QRectF r = tabRect(i);
+            QRectF r = tabRectFormer(i);
             painter->setBrush(Qt::white);
             painter->drawRect(r);
             painter->drawText(r, Qt::AlignCenter, data().items[i].label);
@@ -110,7 +103,7 @@ void TabBar::paint(QPainter *painter)
     }
     if ((data().currentIndex >= 0) && (data().currentIndex < data().items.count()))
     {
-        double l = tabRect(data().currentIndex).left();
+        double l = tabRectFormer(data().currentIndex).left();
         if (m_isMovingCurrentTab)
         {
             l = m_movingCurrentTabPos.x()-50;
@@ -151,14 +144,14 @@ void TabBar::handleEvent(UserEvent event)
 
             for (int i = 0; i < data().items.count(); i++)
             {
-                if (tabRect(i).contains(event.mousePosition))
+                if (tabRectFormer(i).contains(event.mousePosition))
                 {
                     if (data().currentIndex != i)
                     {
                         emit tabController()->tabToBeActivated(i);
                     }
                     m_clickPoint = event.mousePosition;
-                    m_clickOffset = event.mousePosition - tabRect(i).center();
+                    m_clickOffset = event.mousePosition - tabRectFormer(i).center();
                     m_clickTabUid = data().items[i].uid;
                     m_isDragging = false;
                     return;
@@ -198,7 +191,7 @@ QSizeF TabBar::sizeConstraint(const QSizeF &) const
 }
 
 
-QRectF TabBar::tabRect(int index) const
+QRectF TabBar::tabRectFormer(int index) const
 {
     return QRect(rect().left() + index*100, rect().top(), 100, rect().height());
 }
@@ -211,6 +204,26 @@ QRectF TabBar::newButtonRect() const
 QRectF TabBar::closeButtonRect(int index) const
 {
     return QRectF(rect().left() + index*100.0 + 10.0, rect().top() + 10.0, 10.0, 10.0);
+}
+
+NumberMap TabBar::currentCoordinates() const
+{
+    NumberMap result;
+    for (int i = 0; i < m_data.items.count(); i++)
+    {
+        double value = rect().left() + double(i)*currentTabWidth();
+        if ((m_data.currentIndex == i) && (m_isMovingCurrentTab))
+        {
+            value = m_movingCurrentTabPos.x() - currentTabWidth()/2.0;
+        }
+        result[m_data.items[i].uid] = value;
+    }
+    return result;
+}
+
+double TabBar::currentTabWidth() const
+{
+    return 100;
 }
 
 

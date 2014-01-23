@@ -24,7 +24,8 @@ SOURCES += main.cpp\
     headbar.cpp \
     tabcontroller.cpp \
     sheet.cpp \
-    book.cpp
+    book.cpp \
+    design.cpp
 
 HEADERS  += window.h \
     floatroutine.h \
@@ -36,7 +37,8 @@ HEADERS  += window.h \
     tabcontroller.h \
     singletont.h \
     sheet.h \
-    book.h
+    book.h \
+    design.h
 
 FORMS += \
     hintwindow.ui

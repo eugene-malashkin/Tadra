@@ -6,6 +6,8 @@
 
 class HeadBar;
 
+typedef QMap<QUuid,double> NumberMap;
+
 class TabBar : public GraphicObject, public TabResponsibility
 {
     Q_OBJECT
@@ -33,9 +35,11 @@ private:
     QPointF m_clickOffset;
     QUuid m_clickTabUid;
     bool m_isDragging;
-    QRectF tabRect(int index) const;
+    QRectF tabRectFormer(int index) const;
     QRectF newButtonRect() const;
     QRectF closeButtonRect(int index) const;
+    NumberMap currentCoordinates() const;
+    double currentTabWidth() const;
 };
 
 class HeadBar : public GraphicWidget
