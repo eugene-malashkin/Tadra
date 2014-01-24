@@ -1,0 +1,18 @@
+<RCC>
+	<qresource prefix="/">
+		<file>resources/CloseNormal.png</file>
+		<file>resources/CloseHover.png</file>
+		<file>resources/CloseDown.png</file>
+		<file>resources/WideModeDown.png</file>
+		<file>resources/WideModeHover.png</file>
+		<file>resources/WideModeNormal.png</file>
+		<file>resources/WideModeOffDown.png</file>
+		<file>resources/WideModeOffHover.png</file>
+		<file>resources/WideModeOffNormal.png</file>
+		<file>resources/NewDocument.png</file>
+		<file>resources/Left.png</file>
+		<file>resources/Right.png</file>
+		<file>resources/Plus.png</file>
+		<file>resources/DropDown.png</file>
+	</qresource>
+</RCC>

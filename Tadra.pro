@@ -26,7 +26,8 @@ SOURCES += main.cpp\
     sheet.cpp \
     book.cpp \
     design.cpp \
-    dlgtablabel.cpp
+    dlgtablabel.cpp \
+    graphicbutton.cpp
 
 HEADERS  += window.h \
     floatroutine.h \
@@ -40,10 +41,14 @@ HEADERS  += window.h \
     sheet.h \
     book.h \
     design.h \
-    dlgtablabel.h
+    dlgtablabel.h \
+    graphicbutton.h
 
 FORMS += \
     hintwindow.ui \
     dlgtablabel.ui
 
 CONFIG += c++11
+
+RESOURCES += \
+    resources.qrc

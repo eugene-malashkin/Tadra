@@ -1,7 +1,33 @@
 #include "headbar.h"
 #include <QApplication>
+#include <QFontMetricsF>
+#include "design.h"
 
 #include <QDebug>
+
+//******************************************************************************************************
+/*!
+ *\class TabDrawInfo
+ *\brief Запись с информацией о том, как рисовать вкладку.
+*/
+//******************************************************************************************************
+
+TabDrawInfo::TabDrawInfo()
+    : index(-1)
+    , uid()
+    , tabRect()
+    , textRect()
+    , closeButtonRect()
+    , text()
+    , elidedText()
+    , isHover(false)
+    , isActive(false)
+    , isMoving(false)
+    , iconMode(QIcon::Normal)
+{
+
+}
+
 
 //******************************************************************************************************
 /*!
@@ -10,7 +36,7 @@
 */
 //******************************************************************************************************
 
-TabBar::TabBar(HeadBar *headBar)
+TabSwitcherObject::TabSwitcherObject(HeadBar *headBar)
     : GraphicObject(headBar)
     , m_headBar(headBar)
     , m_data()
@@ -20,16 +46,19 @@ TabBar::TabBar(HeadBar *headBar)
     , m_clickOffset()
     , m_clickTabUid()
     , m_isDragging(false)
+    , m_closeIcon()
 {
-
+    m_closeIcon.addFile("://resources/CloseNormal.png", QSize(), QIcon::Normal);
+    m_closeIcon.addFile("://resources/CloseHover.png", QSize(), QIcon::Active);
+    m_closeIcon.addFile("://resources/CloseDown.png", QSize(), QIcon::Selected);
 }
 
-HeadBar* TabBar::headBar() const
+HeadBar* TabSwitcherObject::headBar() const
 {
     return m_headBar;
 }
 
-void TabBar::setData(const TabData &value)
+void TabSwitcherObject::setData(const TabData &value)
 {
     if (m_data != value)
     {
@@ -38,12 +67,12 @@ void TabBar::setData(const TabData &value)
     }
 }
 
-TabData TabBar::data() const
+TabData TabSwitcherObject::data() const
 {
     return m_data;
 }
 
-int TabBar::dropIndex(const QPointF &globalPos) const
+int TabSwitcherObject::dropIndex(const QPointF &globalPos) const
 {
     int result = -1;
     QPointF pos = supervisor()->positionFromGlobalToLocal(globalPos);
@@ -54,20 +83,20 @@ int TabBar::dropIndex(const QPointF &globalPos) const
     return result;
 }
 
-void TabBar::moveCurrentTab(const QPointF &globalPos)
+void TabSwitcherObject::moveCurrentTab(const QPointF &globalPos)
 {
     m_isMovingCurrentTab = true;
     m_movingCurrentTabPos = supervisor()->positionFromGlobalToLocal(globalPos);
     redraw();
 }
 
-void TabBar::fixCurrentTab()
+void TabSwitcherObject::fixCurrentTab()
 {
     m_isMovingCurrentTab = false;
     redraw();
 }
 
-void TabBar::ceaseMoving()
+void TabSwitcherObject::ceaseMoving()
 {
     m_isMovingCurrentTab = false;
     m_movingCurrentTabPos = QPointF();
@@ -78,44 +107,27 @@ void TabBar::ceaseMoving()
     redraw();
 }
 
-TabController* TabBar::tabController() const
+TabController* TabSwitcherObject::tabController() const
 {
     return headBar()->tabController();
 }
 
-void TabBar::paint(QPainter *painter)
+void TabSwitcherObject::paint(QPainter *painter)
 {
-    painter->fillRect(rect(), Qt::yellow);
-
-    painter->setPen(Qt::black);
-
-    for (int i = 0; i < data().items.count(); i++)
+    TabDrawMap map = tabDrawMap();
+    foreach (const TabDrawInfo &info, map)
     {
-        if (i != data().currentIndex)
+        if (!info.isActive)
         {
-            QRectF r = tabRectFormer(i);
-            painter->setBrush(Qt::white);
-            painter->drawRect(r);
-            painter->drawText(r, Qt::AlignCenter, data().items[i].label);
-            painter->setBrush(Qt::red);
-            painter->drawRect(closeButtonRect(i));
+            paintTab(painter, info);
         }
     }
     if ((data().currentIndex >= 0) && (data().currentIndex < data().items.count()))
     {
-        double l = tabRectFormer(data().currentIndex).left();
-        if (m_isMovingCurrentTab)
+        QUuid currentUid = data().items[data().currentIndex].uid;
+        if (map.contains(currentUid))
         {
-            l = m_movingCurrentTabPos.x()-50;
-        }
-        QRectF r(l, rect().top(), 100, rect().height());
-        painter->setBrush(Qt::gray);
-        painter->drawRect(r);
-        painter->drawText(r, Qt::AlignCenter, data().items[data().currentIndex].label);
-        if (!m_isMovingCurrentTab)
-        {
-            painter->setBrush(Qt::red);
-            painter->drawRect(closeButtonRect(data().currentIndex));
+            paintTab(painter, map[currentUid]);
         }
     }
 
@@ -123,7 +135,7 @@ void TabBar::paint(QPainter *painter)
     painter->drawRect(newButtonRect());
 }
 
-void TabBar::handleEvent(UserEvent event)
+void TabSwitcherObject::handleEvent(UserEvent event)
 {
     if ((event.type == UserEvent::MouseDown) && (event.button == Qt::LeftButton))
     {
@@ -185,28 +197,28 @@ void TabBar::handleEvent(UserEvent event)
     }
 }
 
-QSizeF TabBar::sizeConstraint(const QSizeF &) const
+QSizeF TabSwitcherObject::sizeConstraint(const QSizeF &) const
 {
-    return QSizeF(20, 40);
+    return QSizeF(Design::instance()->size(Design::TabSwitcherMinWidth), Design::instance()->size(Design::TabSwitcherMinHeight));
 }
 
 
-QRectF TabBar::tabRectFormer(int index) const
+QRectF TabSwitcherObject::tabRectFormer(int index) const
 {
     return QRect(rect().left() + index*100, rect().top(), 100, rect().height());
 }
 
-QRectF TabBar::newButtonRect() const
+QRectF TabSwitcherObject::newButtonRect() const
 {
     return QRectF(rect().left() + data().items.count()*100.0 + 10.0, rect().top() + 10.0, 10.0, 10.0);
 }
 
-QRectF TabBar::closeButtonRect(int index) const
+QRectF TabSwitcherObject::closeButtonRect(int index) const
 {
     return QRectF(rect().left() + index*100.0 + 10.0, rect().top() + 10.0, 10.0, 10.0);
 }
 
-NumberMap TabBar::currentCoordinates() const
+NumberMap TabSwitcherObject::currentCoordinates() const
 {
     NumberMap result;
     for (int i = 0; i < m_data.items.count(); i++)
@@ -221,9 +233,73 @@ NumberMap TabBar::currentCoordinates() const
     return result;
 }
 
-double TabBar::currentTabWidth() const
+double TabSwitcherObject::currentTabWidth() const
 {
     return 100;
+}
+
+TabDrawMap TabSwitcherObject::tabDrawMap() const
+{
+    TabDrawMap result;
+    NumberMap coordinates = currentCoordinates();
+    double buttonSize = Design::instance()->size(Design::GraphicButtonDefaultIconSize);
+    double elementSpacing = Design::instance()->size(Design::TabElementSpacing);
+    for (int i = 0; i < m_data.items.count(); i++)
+    {
+        TabDrawInfo item;
+        QUuid uid = m_data.items[i].uid;
+        item.index = i;
+        item.uid = uid;
+        double left = coordinates[uid];
+        item.tabRect = QRectF(left, rect().top(), currentTabWidth(), rect().height());
+        item.textRect = QRectF(item.tabRect.left() + elementSpacing, rect().top(), currentTabWidth() - buttonSize - elementSpacing*3.0, rect().height());
+        item.closeButtonRect = QRectF(item.tabRect.right() - buttonSize - elementSpacing, item.tabRect.center().y() - buttonSize/2.0, buttonSize, buttonSize);
+        item.text = m_data.items[i].label;
+        item.isActive = (i == m_data.currentIndex);
+        item.isMoving = item.isActive && m_isMovingCurrentTab;
+        result[uid] = item;
+    }
+    return result;
+}
+
+void TabSwitcherObject::paintTab(QPainter *painter, const TabDrawInfo &info)
+{
+    QColor textColor = Design::instance()->color(Design::TabNormalTextColor);
+    QColor bgColor = Design::instance()->color(Design::TabNormalBgColor);
+    if (info.isActive)
+    {
+        textColor = Design::instance()->color(Design::TabActiveTextColor);
+        bgColor = Design::instance()->color(Design::TabActiveBgColor);
+    }
+    else if (info.isHover)
+    {
+        textColor = Design::instance()->color(Design::TabHoverTextColor);
+        bgColor = Design::instance()->color(Design::TabHoverBgColor);
+    }
+    painter->setPen(Design::instance()->color(Design::TabLineColor));
+    painter->setBrush(bgColor);
+
+    QPainterPath path;
+    double radius = 16;
+    path.moveTo(info.tabRect.bottomLeft());
+    path.lineTo(info.tabRect.left(), info.tabRect.top() + radius);
+    path.arcTo(info.tabRect.left(), info.tabRect.top(), radius, radius, 180.0, -90.0);
+    path.lineTo(info.tabRect.right()-radius, info.tabRect.top());
+    path.arcTo(info.tabRect.right()-radius, info.tabRect.top(), radius, radius, 90.0, -90.0);
+    path.lineTo(info.tabRect.bottomRight());
+    path.lineTo(info.tabRect.bottomLeft());
+
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->drawPath(path);
+    QFont font;
+    QFontMetricsF fm(font);
+    QString elidedText = fm.elidedText(info.text, Qt::ElideMiddle, info.textRect.width());
+    painter->setPen(textColor);
+    painter->drawText(info.textRect, Qt::AlignLeft | Qt::AlignVCenter, elidedText);
+    if (!info.isMoving)
+    {
+        m_closeIcon.paint(painter, info.closeButtonRect.toRect(), Qt::AlignCenter, info.iconMode);
+    }
 }
 
 
@@ -239,7 +315,7 @@ HeadBar::HeadBar(QWidget *parent)
     , m_tabBar(NULL)
     , m_tabController(NULL)
 {
-    m_tabBar = new TabBar(this);
+    m_tabBar = new TabSwitcherObject(this);
     m_tabBar->setSupervisor(this);
     setGraphicObject(m_tabBar);
     m_tabController = new TabController(m_tabBar, this);

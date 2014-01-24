@@ -1,6 +1,7 @@
 #ifndef HEADBAR_H
 #define HEADBAR_H
 
+#include <QIcon>
 #include "graphicwidget.h"
 #include "tabcontroller.h"
 
@@ -8,12 +9,29 @@ class HeadBar;
 
 typedef QMap<QUuid,double> NumberMap;
 
-class TabBar : public GraphicObject, public TabResponsibility
+struct TabDrawInfo
+{
+    int index;
+    QUuid uid;
+    QRectF tabRect;
+    QRectF textRect;
+    QRectF closeButtonRect;
+    QString text;
+    QString elidedText;
+    bool isHover;
+    bool isActive;
+    bool isMoving;
+    QIcon::Mode iconMode;
+    TabDrawInfo();
+};
+typedef QMap<QUuid,TabDrawInfo> TabDrawMap;
+
+class TabSwitcherObject : public GraphicObject, public TabResponsibility
 {
     Q_OBJECT
 
 public:
-    TabBar(HeadBar *headBar);
+    TabSwitcherObject(HeadBar *headBar);
     HeadBar* headBar() const;
     void setData(const TabData &value) override;
     TabData data() const override;
@@ -35,11 +53,14 @@ private:
     QPointF m_clickOffset;
     QUuid m_clickTabUid;
     bool m_isDragging;
+    QIcon m_closeIcon;
     QRectF tabRectFormer(int index) const;
     QRectF newButtonRect() const;
     QRectF closeButtonRect(int index) const;
     NumberMap currentCoordinates() const;
     double currentTabWidth() const;
+    TabDrawMap tabDrawMap() const;
+    void paintTab(QPainter *painter, const TabDrawInfo &info);
 };
 
 class HeadBar : public GraphicWidget
@@ -51,7 +72,7 @@ public:
     TabController* tabController() const;
 
 private:
-    TabBar *m_tabBar;
+    TabSwitcherObject *m_tabBar;
     TabController *m_tabController;
 };
 

@@ -6,7 +6,7 @@
 //******************************************************************************************************
 /*!
  *\class Design
- *\brief Класс, представляющий информацию о дизайне (размеры, цвета, шрифты и пр.).
+ *\brief Класс, представляющий информацию о дизайне (размеры, цвета и пр.).
 */
 //******************************************************************************************************
 
@@ -59,12 +59,6 @@ double Design::size(SizeKey key) const
     case GraphicButtonIconTextSpacing:
         result = 4;
         break;
-    case TabAngle:
-        result = M_PI/2.75;
-        break;
-    case TabRadiusCoef:
-        result = 1.0/3.0;
-        break;
     case TabMinWidth:
         result = 100;
         break;
@@ -80,8 +74,8 @@ double Design::size(SizeKey key) const
     case TabEmbryoSpacing:
         result = 6;
         break;
-    case TabSwitcherLeftMargin:
-        result = 10;
+    case TabElementSpacing:
+        result = 4;
         break;
     case TabSwitcherMinWidth:
         result = 300;
@@ -136,20 +130,6 @@ QColor Design::color(ColorRey key) const
         break;
     case TabActiveTextColor:
         result = QColor(Qt::white);
-        break;
-    }
-    return result;
-}
-
-QFont Design::font(FontKey key) const
-{
-    QFont result;
-    switch (key)
-    {
-    case GraphicButtonFont:
-    case TabFont:
-        result.setFamily("Tahoma");
-        result.setPointSize(10);
         break;
     }
     return result;
