@@ -60,7 +60,7 @@ double Design::size(SizeKey key) const
         result = 4;
         break;
     case TabMinWidth:
-        result = 128;
+        result = 148;
         break;
     case TabMaxWidth:
         result = 240;
