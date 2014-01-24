@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     tabcontroller.cpp \
     sheet.cpp \
     book.cpp \
-    design.cpp
+    design.cpp \
+    dlgtablabel.cpp
 
 HEADERS  += window.h \
     floatroutine.h \
@@ -38,9 +39,11 @@ HEADERS  += window.h \
     singletont.h \
     sheet.h \
     book.h \
-    design.h
+    design.h \
+    dlgtablabel.h
 
 FORMS += \
-    hintwindow.ui
+    hintwindow.ui \
+    dlgtablabel.ui
 
 CONFIG += c++11

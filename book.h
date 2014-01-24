@@ -17,6 +17,8 @@ public:
     Window* window() const;
     void addSheet(const QString &label = QString());
     void removeSheet(int index, bool doDelete = true);
+    void setSheetLabel(int index, const QString &label);
+    QString sheetLabel(int index) const;
     int count() const;
     bool isEmpty() const;
     SheetList sheets() const;

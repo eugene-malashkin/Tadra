@@ -44,7 +44,7 @@ void Book::addSheet(const QString &label)
     bool wasCurrentIndexChanged = false;
     innerSetCurrentIndex(indexToBeCurrent, wasCurrentIndexChanged);
 
-    // Сигнаилизируем об изменениях
+    // Сигнализируем об изменениях
     emit changed();
 }
 
@@ -72,6 +72,31 @@ void Book::removeSheet(int index, bool doDelete)
         // Сигнаилизируем об изменениях
         emit changed();
     }
+}
+
+void Book::setSheetLabel(int index, const QString &label)
+{
+    if ((index >= 0) && (index < m_sheets.count()))
+    {
+        Sheet *sheet = m_sheets[index];
+        TabInfo tabInfo = sheet->tabInfo();
+        tabInfo.label = label;
+        if (sheet->tabInfo() != tabInfo)
+        {
+            sheet->setTabInfo(tabInfo);
+            emit changed();
+        }
+    }
+}
+
+QString Book::sheetLabel(int index) const
+{
+    QString result;
+    if ((index >= 0) && (index < m_sheets.count()))
+    {
+        result = m_sheets[index]->tabInfo().label;
+    }
+    return result;
 }
 
 int Book::count() const

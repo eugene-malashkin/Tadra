@@ -6,6 +6,7 @@
 #include "headbar.h"
 #include "book.h"
 #include "tabcontroller.h"
+#include "dlgtablabel.h"
 
 #include <QDebug>
 
@@ -266,6 +267,20 @@ void Window::previousTab()
     book()->previousSheet();
 }
 
+void Window::renameTab()
+{
+    int currentIndex = book()->currentIndex();
+    if (currentIndex >= 0)
+    {
+        DlgTabLabel dlg(this);
+        dlg.setLabel(book()->sheetLabel(currentIndex));
+        if (dlg.exec() == QDialog::Accepted)
+        {
+            book()->setSheetLabel(currentIndex, dlg.label());
+        }
+    }
+}
+
 void Window::initializeCentralWidget()
 {
     QWidget *centralWidget = new QWidget;
@@ -315,4 +330,5 @@ void Window::initializeMenu()
 #endif
     windowMenu->addAction("Предыдущая вкладка", this, SLOT(previousTab()), QKeySequence(prevTabKst));
     windowMenu->addAction("Следующая вкладка", this, SLOT(nextTab()), QKeySequence(nextTabKst));
+    windowMenu->addAction("Переименовать вкладку", this, SLOT(renameTab()), QKeySequence("Ctrl+R"));
 }

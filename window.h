@@ -53,6 +53,7 @@ private slots:
     void toggleFullScreen();
     void nextTab();
     void previousTab();
+    void renameTab();
 
 private:
     bool m_isPreviewMode;
