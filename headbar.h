@@ -54,13 +54,14 @@ private:
     QUuid m_clickTabUid;
     bool m_isDragging;
     QIcon m_closeIcon;
-    QRectF tabRectFormer(int index) const;
-    QRectF newButtonRect() const;
-    QRectF closeButtonRect(int index) const;
+    QRectF embryoRect() const;
     NumberMap currentCoordinates() const;
     double currentTabWidth() const;
     TabDrawMap tabDrawMap() const;
+    int hitTab(const QPointF &pos, const TabDrawMap &map, QPointF &offset) const;
+    int hitCloseButton(const QPointF &pos, const TabDrawMap &map) const;
     void paintTab(QPainter *painter, const TabDrawInfo &info);
+    void paintEmbryo(QPainter *painter);
 };
 
 class HeadBar : public GraphicWidget

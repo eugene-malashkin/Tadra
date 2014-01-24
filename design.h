@@ -30,7 +30,8 @@ public:
         TabEmbryoSpacing,
         TabElementSpacing,
         TabSwitcherMinWidth,
-        TabSwitcherMinHeight
+        TabSwitcherMinHeight,
+        TabRadius
     };
 
     enum ColorRey

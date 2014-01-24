@@ -78,7 +78,7 @@ int TabSwitcherObject::dropIndex(const QPointF &globalPos) const
     QPointF pos = supervisor()->positionFromGlobalToLocal(globalPos);
     if (rect().contains(pos))
     {
-        result = qBound(0, int((pos.x() - rect().left()) / 100), m_data.items.count());
+        result = qBound(0, int((pos.x() - rect().left()) / currentTabWidth()), m_data.items.count());
     }
     return result;
 }
@@ -131,43 +131,40 @@ void TabSwitcherObject::paint(QPainter *painter)
         }
     }
 
-    painter->setBrush(Qt::green);
-    painter->drawRect(newButtonRect());
+    paintEmbryo(painter);
 }
 
 void TabSwitcherObject::handleEvent(UserEvent event)
 {
     if ((event.type == UserEvent::MouseDown) && (event.button == Qt::LeftButton))
     {
-        if (newButtonRect().contains(event.mousePosition))
+        if (embryoRect().contains(event.mousePosition))
         {
             emit tabController()->tabToBeAdded();
         }
         else
         {
-            for (int i = 0; i < data().items.count(); i++)
+            TabDrawMap map = tabDrawMap();
+            int index = hitCloseButton(event.mousePosition, map);
+            if (index >= 0)
             {
-                if (closeButtonRect(i).contains(event.mousePosition))
-                {
-                    emit tabController()->tabToBeRemoved(i);
-                    return;
-                }
+                emit tabController()->tabToBeRemoved(index);
+                return;
             }
 
-            for (int i = 0; i < data().items.count(); i++)
+            QPointF offset;
+            index = hitTab(event.mousePosition, map, offset);
+            if (index >= 0)
             {
-                if (tabRectFormer(i).contains(event.mousePosition))
+                if (data().currentIndex != index)
                 {
-                    if (data().currentIndex != i)
-                    {
-                        emit tabController()->tabToBeActivated(i);
-                    }
-                    m_clickPoint = event.mousePosition;
-                    m_clickOffset = event.mousePosition - tabRectFormer(i).center();
-                    m_clickTabUid = data().items[i].uid;
-                    m_isDragging = false;
-                    return;
+                    emit tabController()->tabToBeActivated(index);
                 }
+                m_clickPoint = event.mousePosition;
+                m_clickOffset = offset;
+                m_clickTabUid = data().items[index].uid;
+                m_isDragging = false;
+                return;
             }
         }
     }
@@ -203,19 +200,13 @@ QSizeF TabSwitcherObject::sizeConstraint(const QSizeF &) const
 }
 
 
-QRectF TabSwitcherObject::tabRectFormer(int index) const
+QRectF TabSwitcherObject::embryoRect() const
 {
-    return QRect(rect().left() + index*100, rect().top(), 100, rect().height());
-}
-
-QRectF TabSwitcherObject::newButtonRect() const
-{
-    return QRectF(rect().left() + data().items.count()*100.0 + 10.0, rect().top() + 10.0, 10.0, 10.0);
-}
-
-QRectF TabSwitcherObject::closeButtonRect(int index) const
-{
-    return QRectF(rect().left() + index*100.0 + 10.0, rect().top() + 10.0, 10.0, 10.0);
+    double left = rect().left() + currentTabWidth()*double(data().items.count()) + Design::instance()->size(Design::TabEmbryoSpacing);
+    double width = Design::instance()->size(Design::TabEmbryoWidth);
+    double height = Design::instance()->size(Design::TabEmbryoHeight);
+    QRectF result(left, rect().center().y() - height/2.0, width, height);
+    return result;
 }
 
 NumberMap TabSwitcherObject::currentCoordinates() const
@@ -235,7 +226,7 @@ NumberMap TabSwitcherObject::currentCoordinates() const
 
 double TabSwitcherObject::currentTabWidth() const
 {
-    return 100;
+    return Design::instance()->size(Design::TabMinWidth);
 }
 
 TabDrawMap TabSwitcherObject::tabDrawMap() const
@@ -262,6 +253,35 @@ TabDrawMap TabSwitcherObject::tabDrawMap() const
     return result;
 }
 
+int TabSwitcherObject::hitTab(const QPointF &pos, const TabDrawMap &map, QPointF &offset) const
+{
+    int result = -1;
+    foreach (const TabDrawInfo &info, map)
+    {
+        if (info.tabRect.contains(pos))
+        {
+            result = info.index;
+            offset = pos - info.tabRect.center();
+            break;
+        }
+    }
+    return result;
+}
+
+int TabSwitcherObject::hitCloseButton(const QPointF &pos, const TabDrawMap &map) const
+{
+    int result = -1;
+    foreach (const TabDrawInfo &info, map)
+    {
+        if (info.closeButtonRect.contains(pos))
+        {
+            result = info.index;
+            break;
+        }
+    }
+    return result;
+}
+
 void TabSwitcherObject::paintTab(QPainter *painter, const TabDrawInfo &info)
 {
     QColor textColor = Design::instance()->color(Design::TabNormalTextColor);
@@ -280,12 +300,12 @@ void TabSwitcherObject::paintTab(QPainter *painter, const TabDrawInfo &info)
     painter->setBrush(bgColor);
 
     QPainterPath path;
-    double radius = 16;
+    double radius = Design::instance()->size(Design::TabRadius);
     path.moveTo(info.tabRect.bottomLeft());
     path.lineTo(info.tabRect.left(), info.tabRect.top() + radius);
-    path.arcTo(info.tabRect.left(), info.tabRect.top(), radius, radius, 180.0, -90.0);
+    path.arcTo(info.tabRect.left(), info.tabRect.top(), radius*2.0, radius*2.0, 180.0, -90.0);
     path.lineTo(info.tabRect.right()-radius, info.tabRect.top());
-    path.arcTo(info.tabRect.right()-radius, info.tabRect.top(), radius, radius, 90.0, -90.0);
+    path.arcTo(info.tabRect.right()-radius*2.0, info.tabRect.top(), radius*2.0, radius*2.0, 90.0, -90.0);
     path.lineTo(info.tabRect.bottomRight());
     path.lineTo(info.tabRect.bottomLeft());
 
@@ -300,6 +320,29 @@ void TabSwitcherObject::paintTab(QPainter *painter, const TabDrawInfo &info)
     {
         m_closeIcon.paint(painter, info.closeButtonRect.toRect(), Qt::AlignCenter, info.iconMode);
     }
+}
+
+void TabSwitcherObject::paintEmbryo(QPainter *painter)
+{
+    painter->setPen(Design::instance()->color(Design::TabLineColor));
+    painter->setBrush(Design::instance()->color(Design::TabNormalBgColor));
+    QRectF r = embryoRect();
+    QPainterPath path;
+    double radius = Design::instance()->size(Design::TabRadius);
+    path.moveTo(r.left(), r.top()+radius);
+    path.arcTo(r.left(), r.top(), radius*2.0, radius*2.0, 180, -90);
+    path.lineTo(r.left()+radius, r.top());
+    path.lineTo(r.right()-radius, r.top());
+    path.arcTo(r.right()-radius*2.0, r.top(), radius*2.0, radius*2.0, 90, -90);
+    path.lineTo(r.right(), r.top()+radius);
+    path.lineTo(r.right(), r.bottom()-radius);
+    path.arcTo(r.right()-radius*2.0, r.bottom()-radius*2.0, radius*2.0, radius*2.0, 0, -90);
+    path.lineTo(r.right()-radius, r.bottom());
+    path.lineTo(r.left()+radius, r.bottom());
+    path.arcTo(r.left(), r.bottom()-radius*2.0, radius*2.0, radius*2.0, -90, -90);
+    path.lineTo(r.left(), r.bottom()-radius);
+    path.closeSubpath();
+    painter->drawPath(path);
 }
 
 

@@ -3,10 +3,12 @@
 #include <QMenu>
 #include <QApplication>
 #include <QVBoxLayout>
+#include <QStyleFactory>
 #include "headbar.h"
 #include "book.h"
 #include "tabcontroller.h"
 #include "dlgtablabel.h"
+#include "design.h"
 
 #include <QDebug>
 
@@ -404,6 +406,9 @@ void Window::initializeCentralWidget()
 
 void Window::initializeMenu()
 {
+    menuBar()->setStyle(QStyleFactory::create("fusion"));
+    menuBar()->setStyleSheet(Design::instance()->styleSheet(Design::MainMenuStyleSheet));
+
     QMenu *fileMenu = menuBar()->addMenu("Файл");
     fileMenu->addAction("Новое окно", this, SLOT(addWindow()), QKeySequence::New);
     fileMenu->addAction("Новая вкладка", this, SLOT(addTab()), QKeySequence::AddTab);

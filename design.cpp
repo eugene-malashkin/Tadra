@@ -60,10 +60,10 @@ double Design::size(SizeKey key) const
         result = 4;
         break;
     case TabMinWidth:
-        result = 100;
+        result = 128;
         break;
     case TabMaxWidth:
-        result = 180;
+        result = 240;
         break;
     case TabEmbryoWidth:
         result = 30;
@@ -78,10 +78,13 @@ double Design::size(SizeKey key) const
         result = 4;
         break;
     case TabSwitcherMinWidth:
-        result = 300;
+        result = 400;
         break;
     case TabSwitcherMinHeight:
         result = 24;
+        break;
+    case TabRadius:
+        result = 7;
         break;
     }
     return result;
