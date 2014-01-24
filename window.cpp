@@ -116,7 +116,7 @@ void WindowsManager::gotoWindow(const QUuid &windowUid)
         Window *window = findWindow(windowUid);
         if (window != NULL)
         {
-            qDebug() << "activate window" << window->windowTitle();
+            window->raise();
             window->activateWindow();
         }
     }
