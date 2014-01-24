@@ -12,17 +12,26 @@
 //******************************************************************************************************
 
 Sheet::Sheet(Book *book)
-    : QWidget()
+    : QScrollArea()
     , m_book(book)
+    , m_layer(NULL)
     , m_tabInfo()
     , m_isActive(false)
 {
-
+    setWidgetResizable(true);
+    setFrameShape(QFrame::NoFrame);
+    m_layer = new DocumentLayer;
+    setWidget(m_layer);
 }
 
 Book* Sheet::book() const
 {
     return m_book;
+}
+
+DocumentLayer* Sheet::layer() const
+{
+    return m_layer;
 }
 
 void Sheet::setTabInfo(const TabInfo &value)
@@ -51,12 +60,4 @@ void Sheet::setActive(bool value)
 bool Sheet::isActive() const
 {
     return m_isActive;
-}
-
-void Sheet::paintEvent(QPaintEvent *)
-{
-    QPainter painter(this);
-    QRect r(0, 0, width(), height());
-    painter.fillRect(r, Qt::gray);
-    painter.drawText(r, Qt::AlignCenter, tabInfo().label);
 }

@@ -177,7 +177,11 @@ void Window::addTab()
 
 void Window::addDocument()
 {
-
+    Sheet *sheet = book()->currentSheet();
+    if (sheet != NULL)
+    {
+        sheet->layer()->createBox();
+    }
 }
 
 void Window::closeWindow()

@@ -27,7 +27,15 @@ SOURCES += main.cpp\
     book.cpp \
     design.cpp \
     dlgtablabel.cpp \
-    graphicbutton.cpp
+    graphicbutton.cpp \
+    base.cpp \
+    documentbody.cpp \
+    documentboxbuttons.cpp \
+    gridcoordinategenerator.cpp \
+    gridscale.cpp \
+    placeroutine.cpp \
+    documentlayer.cpp \
+    documentbox.cpp
 
 HEADERS  += window.h \
     floatroutine.h \
@@ -42,7 +50,16 @@ HEADERS  += window.h \
     book.h \
     design.h \
     dlgtablabel.h \
-    graphicbutton.h
+    graphicbutton.h \
+    base.h \
+    documentbody.h \
+    documentboxbuttons.h \
+    gridcoordinategenerator.h \
+    gridscale.h \
+    placeroutine.h \
+    indexsortheplert.h \
+    documentlayer.h \
+    documentbox.h
 
 FORMS += \
     hintwindow.ui \

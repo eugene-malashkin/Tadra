@@ -114,6 +114,7 @@ TabController* TabSwitcherObject::tabController() const
 
 void TabSwitcherObject::paint(QPainter *painter)
 {
+    painter->fillRect(rect(), Design::instance()->color(Design::HeadBarBgColor));
     TabDrawMap map = tabDrawMap();
     foreach (const TabDrawInfo &info, map)
     {
