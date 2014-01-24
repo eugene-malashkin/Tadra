@@ -12,7 +12,7 @@
 
 //******************************************************************************************************
 /*!
- *\class Windows
+ *\class WindowsManager
  *\brief Менеджер окон.
 */
 //******************************************************************************************************
@@ -27,10 +27,12 @@ WindowsManager::WindowsManager()
 void WindowsManager::addWindow()
 {
     Window *next = new Window(false);
+    next->addTab();
     next->show();
+    updateWindowsEnumMenu();
 }
 
-WindowList WindowsManager::windowList()
+WindowList WindowsManager::windowList(bool doIncludeAll)
 {
     WindowList result;
     QWidgetList widgets = QApplication::topLevelWidgets();
@@ -39,7 +41,25 @@ WindowList WindowsManager::windowList()
         Window *window = qobject_cast<Window*>(widget);
         if (window != NULL)
         {
-            result << window;
+            if ((doIncludeAll) || ((!window->isPreviewMode()) && (window->isVisible())))
+            {
+                result << window;
+            }
+        }
+    }
+    return result;
+}
+
+Window* WindowsManager::findWindow(const QUuid &uid)
+{
+    Window *result = NULL;
+    WindowList windows = windowList(true);
+    foreach (Window *window, windows)
+    {
+        if (window->uid() == uid)
+        {
+            result = window;
+            break;
         }
     }
     return result;
@@ -63,7 +83,7 @@ void WindowsManager::receiveTabPlace(const QPointF &globalPos, Window* &window, 
 Window* WindowsManager::findTabSite(const QUuid &tabUid)
 {
     Window *result = NULL;
-    WindowList windows = windowList();
+    WindowList windows = windowList(true);
     foreach (Window *window, windows)
     {
         if (window->book()->contains(tabUid))
@@ -73,6 +93,33 @@ Window* WindowsManager::findTabSite(const QUuid &tabUid)
         }
     }
     return result;
+}
+
+void WindowsManager::updateWindowsEnumMenu()
+{
+    WindowList windows = windowList(false);
+    foreach (Window *window, windows)
+    {
+        window->updateWindowsEnumMenu();
+    }
+}
+
+void WindowsManager::windowIsClosing(Window *)
+{
+    updateWindowsEnumMenu();
+}
+
+void WindowsManager::gotoWindow(const QUuid &windowUid)
+{
+    if (!windowUid.isNull())
+    {
+        Window *window = findWindow(windowUid);
+        if (window != NULL)
+        {
+            qDebug() << "activate window" << window->windowTitle();
+            window->activateWindow();
+        }
+    }
 }
 
 
@@ -86,9 +133,11 @@ Window* WindowsManager::findTabSite(const QUuid &tabUid)
 Window::Window(bool isPreviewMode)
     : QMainWindow(NULL, Qt::WindowFlags((isPreviewMode) ? Qt::FramelessWindowHint : 0))
     , m_isPreviewMode(isPreviewMode)
+    , m_uid(QUuid::createUuid())
     , m_headBar(NULL)
     , m_book(NULL)
     , m_previewWindow()
+    , m_windowsEnumMenu(NULL)
 {
     initializeCentralWidget();
     initializeMenu();
@@ -97,6 +146,11 @@ Window::Window(bool isPreviewMode)
 bool Window::isPreviewMode() const
 {
     return m_isPreviewMode;
+}
+
+QUuid Window::uid() const
+{
+    return m_uid;
 }
 
 HeadBar* Window::headBar() const
@@ -137,6 +191,31 @@ void Window::closeTab()
 void Window::closeDocument()
 {
 
+}
+
+void Window::updateWindowsEnumMenu()
+{
+    // Получаем список окон и сортируем его
+    WindowList windows = WindowsManager::windowList(false);
+    qSort(windows.begin(), windows.end(), windowTitleLessThan);
+
+    // Добавляем пункты меню с окнами
+    m_windowsEnumMenu->clear();
+    foreach (Window *window, windows)
+    {
+        QAction *action = m_windowsEnumMenu->addAction(window->windowTitle(), this, SLOT(gotoWindow()));
+        action->setData(window->uid());
+        action->setCheckable(true);
+        if (window == this)
+        {
+            action->setChecked(true);
+        }
+    }
+}
+
+void Window::closeEvent(QCloseEvent *)
+{
+    WindowsManager::windowIsClosing(this);
 }
 
 void Window::onTabToBeActivated(int index)
@@ -225,7 +304,7 @@ void Window::onTabToBeDropped(QUuid tabUid, QPointF globalPos)
         m_previewWindow = NULL;
     }
 
-    WindowList windows = WindowsManager::windowList();
+    WindowList windows = WindowsManager::windowList(true);
     foreach (Window *window, windows)
     {
         window->headBar()->tabController()->ceaseMoving();
@@ -243,6 +322,7 @@ void Window::onTabToBeDropped(QUuid tabUid, QPointF globalPos)
 void Window::onBookChanged()
 {
     headBar()->tabController()->setData(book()->tabData());
+    updateWindowTitle();
 }
 
 void Window::toggleFullScreen()
@@ -277,6 +357,24 @@ void Window::renameTab()
         if (dlg.exec() == QDialog::Accepted)
         {
             book()->setSheetLabel(currentIndex, dlg.label());
+        }
+    }
+}
+
+void Window::gotoWindow()
+{
+    QAction *action = qobject_cast<QAction*>(sender());
+    if (action != NULL)
+    {
+        // Переходим в нужное окно
+        QUuid windowUid = action->data().toUuid();
+        WindowsManager::gotoWindow(windowUid);
+
+        // Корректируем галочки в списке окон, чтобы они оставались прежними
+        QList<QAction*> actions = m_windowsEnumMenu->actions();
+        foreach (QAction *action, actions)
+        {
+            action->setChecked(uid() == action->data().toUuid());
         }
     }
 }
@@ -317,8 +415,14 @@ void Window::initializeMenu()
 #endif
     fileMenu->addAction("Закрыть окно", this, SLOT(closeWindow()), QKeySequence(closeWindowKst));
     fileMenu->addAction("Закрыть вкладку", this, SLOT(closeTab()), QKeySequence::Close);
+#ifndef Q_OS_MAC
+    fileMenu->addSeparator();
+    fileMenu->addAction("Выход", qApp, SLOT(quit()));
+#endif
 
     QMenu *windowMenu = menuBar()->addMenu("Окно");
+    m_windowsEnumMenu = windowMenu->addMenu("Открытые окна");
+    windowMenu->addSeparator();
     m_toggleFullScreenAction = windowMenu->addAction("Полноэкранный режим", this, SLOT(toggleFullScreen()), QKeySequence::FullScreen);
     m_toggleFullScreenAction->setCheckable(true);
     windowMenu->addSeparator();
@@ -331,4 +435,24 @@ void Window::initializeMenu()
     windowMenu->addAction("Предыдущая вкладка", this, SLOT(previousTab()), QKeySequence(prevTabKst));
     windowMenu->addAction("Следующая вкладка", this, SLOT(nextTab()), QKeySequence(nextTabKst));
     windowMenu->addAction("Переименовать вкладку", this, SLOT(renameTab()), QKeySequence("Ctrl+R"));
+}
+
+void Window::updateWindowTitle()
+{
+    QString titleSuffix = book()->sheetLabel(book()->currentIndex());
+    if (titleSuffix.isEmpty())
+    {
+        titleSuffix = "пустое окно";
+    }
+    QString newTitle = QString("Валютчик - %1").arg(titleSuffix);
+    if (windowTitle() != newTitle)
+    {
+        setWindowTitle(newTitle);
+        WindowsManager::updateWindowsEnumMenu();
+    }
+}
+
+bool Window::windowTitleLessThan(Window *w1, Window *w2)
+{
+    return (w1->windowTitle() < w2->windowTitle());
 }
