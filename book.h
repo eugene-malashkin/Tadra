@@ -23,6 +23,8 @@ public:
     void setCurrentIndex(int value);
     int currentIndex() const;
     Sheet* currentSheet() const;
+    void nextSheet();
+    void previousSheet();
     int indexOf(const QUuid &tabUid) const;
     bool contains(const QUuid &tabUid) const;
     Sheet* sheet(int index) const;

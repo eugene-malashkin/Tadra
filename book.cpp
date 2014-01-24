@@ -124,6 +124,35 @@ Sheet* Book::currentSheet() const
     return result;
 }
 
+void Book::nextSheet()
+{
+    int ward = 0;
+    int current = currentIndex();
+    if ((current >= 0) && (current < count()-1))
+    {
+        ward = current + 1;
+    }
+    setCurrentIndex(ward);
+}
+
+void Book::previousSheet()
+{
+    int ward = 0;
+    int current = currentIndex();
+    if (current >= 0)
+    {
+        if (current == 0)
+        {
+            ward = count()-1;
+        }
+        else
+        {
+            ward = current - 1;
+        }
+    }
+    setCurrentIndex(ward);
+}
+
 int Book::indexOf(const QUuid &tabUid) const
 {
     int result = -1;

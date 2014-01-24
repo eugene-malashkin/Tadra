@@ -51,6 +51,8 @@ private slots:
     void onTabToBeDropped(QUuid uid, QPointF globalPos);
     void onBookChanged();
     void toggleFullScreen();
+    void nextTab();
+    void previousTab();
 
 private:
     bool m_isPreviewMode;

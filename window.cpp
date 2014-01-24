@@ -256,6 +256,16 @@ void Window::toggleFullScreen()
     }
 }
 
+void Window::nextTab()
+{
+    book()->nextSheet();
+}
+
+void Window::previousTab()
+{
+    book()->previousSheet();
+}
+
 void Window::initializeCentralWidget()
 {
     QWidget *centralWidget = new QWidget;
@@ -296,4 +306,7 @@ void Window::initializeMenu()
     QMenu *windowMenu = menuBar()->addMenu("Окно");
     m_toggleFullScreenAction = windowMenu->addAction("Полноэкранный режим", this, SLOT(toggleFullScreen()), QKeySequence::FullScreen);
     m_toggleFullScreenAction->setCheckable(true);
+    windowMenu->addSeparator();
+    windowMenu->addAction("Следующая вкладка", this, SLOT(nextTab()), QKeySequence::NextChild);
+    windowMenu->addAction("Предыдущая вкладка", this, SLOT(previousTab()), QKeySequence::PreviousChild);
 }
