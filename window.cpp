@@ -307,6 +307,12 @@ void Window::initializeMenu()
     m_toggleFullScreenAction = windowMenu->addAction("Полноэкранный режим", this, SLOT(toggleFullScreen()), QKeySequence::FullScreen);
     m_toggleFullScreenAction->setCheckable(true);
     windowMenu->addSeparator();
-    windowMenu->addAction("Следующая вкладка", this, SLOT(nextTab()), QKeySequence::NextChild);
-    windowMenu->addAction("Предыдущая вкладка", this, SLOT(previousTab()), QKeySequence::PreviousChild);
+    QString prevTabKst("Ctrl+Shift+Tab");
+    QString nextTabKst("Ctrl+Tab");
+#ifdef Q_OS_MAC
+    prevTabKst = "Meta+Shift+Tab";
+    nextTabKst = "Meta+Tab";
+#endif
+    windowMenu->addAction("Предыдущая вкладка", this, SLOT(previousTab()), QKeySequence(prevTabKst));
+    windowMenu->addAction("Следующая вкладка", this, SLOT(nextTab()), QKeySequence(nextTabKst));
 }
