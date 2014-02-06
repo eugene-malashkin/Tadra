@@ -5,14 +5,14 @@
 #include <QPointer>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QLineEdit>
 #include <QToolButton>
 #include "placeroutine.h"
 
 class DocumentLayer;
-class DocumentBody;
+class CurrencyChartWidget;
 class GraphicWidget;
 class DocumentBoxButtons;
+class SearchInput;
 
 class DocumentBox : public QWidget
 {
@@ -49,16 +49,17 @@ protected:
 private slots:
     void onWideModeButtonClicked();
     void onCloseButtonClicked();
+    void onInstrumentChanged();
 
 private:
     DocumentLayer *m_layer;
     int m_orderIndex;
     QVBoxLayout *m_centralLayout;
     QHBoxLayout *m_headerLayout;
-    QLineEdit *m_queryEdit;
+    SearchInput *m_searchInput;
     GraphicWidget *m_buttonsWidget;
     DocumentBoxButtons *m_buttonsObject;
-    DocumentBody *m_body;
+    CurrencyChartWidget *m_chartWidget;
     QRectF m_stackRect;
     QRect m_gridRect;
     QRect m_screenRect;

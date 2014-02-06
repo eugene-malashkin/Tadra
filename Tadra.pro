@@ -6,7 +6,7 @@
 
 cache()
 
-QT       += core gui
+QT       += core gui network xml
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -35,7 +35,16 @@ SOURCES += main.cpp\
     gridscale.cpp \
     placeroutine.cpp \
     documentlayer.cpp \
-    documentbox.cpp
+    documentbox.cpp \
+    chartroutine.cpp \
+    colorroutine.cpp \
+    currencychartwidget.cpp \
+    currencyinstrument.cpp \
+    numeral.cpp \
+    searchengine.cpp \
+    searchinput.cpp \
+    searchinputhighlight.cpp \
+    timelyaction.cpp
 
 HEADERS  += window.h \
     floatroutine.h \
@@ -59,7 +68,16 @@ HEADERS  += window.h \
     placeroutine.h \
     indexsortheplert.h \
     documentlayer.h \
-    documentbox.h
+    documentbox.h \
+    chartroutine.h \
+    colorroutine.h \
+    currencychartwidget.h \
+    currencyinstrument.h \
+    numeral.h \
+    searchengine.h \
+    searchinput.h \
+    searchinputhighlight.h \
+    timelyaction.h
 
 FORMS += \
     hintwindow.ui \

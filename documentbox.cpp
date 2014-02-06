@@ -3,7 +3,8 @@
 #include <QMouseEvent>
 #include <QSpacerItem>
 #include "documentlayer.h"
-#include "documentbody.h"
+#include "currencychartwidget.h"
+#include "searchinput.h"
 #include "design.h"
 #include "placeroutine.h"
 #include "floatroutine.h"
@@ -18,10 +19,10 @@ DocumentBox::DocumentBox(DocumentLayer *parent)
     ,m_orderIndex(0)
     ,m_centralLayout(NULL)
     ,m_headerLayout(NULL)
-    ,m_queryEdit(NULL)
+    ,m_searchInput(NULL)
     ,m_buttonsWidget(NULL)
     ,m_buttonsObject(NULL)
-    ,m_body(NULL)
+    ,m_chartWidget(NULL)
     ,m_stackRect()
     ,m_gridRect()
     ,m_screenRect()
@@ -36,10 +37,11 @@ DocumentBox::DocumentBox(DocumentLayer *parent)
     setLayout(m_centralLayout);
 
     m_headerLayout = new QHBoxLayout;
-    m_queryEdit = new QLineEdit;
-    m_queryEdit->installEventFilter(this);
-    m_queryEdit->setStyleSheet(Design::instance()->styleSheet(Design::QueryEditStyleSheet));
-    m_headerLayout->addWidget(m_queryEdit);
+    m_searchInput = new SearchInput;
+    m_searchInput->installEventFilter(this);
+    m_searchInput->setStyleSheet(Design::instance()->styleSheet(Design::QueryEditStyleSheet));
+    connect(m_searchInput, SIGNAL(instrumentChanged()), this, SLOT(onInstrumentChanged()));
+    m_headerLayout->addWidget(m_searchInput);
 
     QSpacerItem *headerSpacer = new QSpacerItem(8, 16, QSizePolicy::Minimum, QSizePolicy::Minimum);
     m_headerLayout->addItem(headerSpacer);
@@ -55,9 +57,9 @@ DocumentBox::DocumentBox(DocumentLayer *parent)
 
     m_centralLayout->addLayout(m_headerLayout);
 
-    m_body = new DocumentBody;
-    m_body->installEventFilter(this);
-    m_centralLayout->addWidget(m_body);
+    m_chartWidget = new CurrencyChartWidget;
+    m_chartWidget->installEventFilter(this);
+    m_centralLayout->addWidget(m_chartWidget);
 }
 
 DocumentLayer* DocumentBox::layer() const
@@ -214,6 +216,11 @@ void DocumentBox::onWideModeButtonClicked()
 void DocumentBox::onCloseButtonClicked()
 {
     emit closing();
+}
+
+void DocumentBox::onInstrumentChanged()
+{
+    m_chartWidget->setInstrument(m_searchInput->instrument());
 }
 
 RectBoundType DocumentBox::findBound(const QPoint &point) const
