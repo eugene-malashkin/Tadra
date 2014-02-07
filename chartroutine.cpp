@@ -862,17 +862,13 @@ bool DateTimeScaleStep::isIntraday() const
 int DateTimeScaleStep::seconds() const
 {
     int result = 0;
-    if (isIntraday())
+    if (type == Minute)
     {
-        switch (type)
-        {
-        case Minute:
-            result = count*60;
-            break;
-        case Hour:
-            result = count*60*60;
-            break;
-        };
+        result = count*60;
+    }
+    else if (type == Hour)
+    {
+        result = count*60*60;
     }
     else
     {

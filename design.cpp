@@ -138,6 +138,21 @@ QColor Design::color(ColorRey key) const
     return result;
 }
 
+QFont Design::font(FontKey key) const
+{
+    QFont result;
+    switch (key)
+    {
+    case ChartFont:
+        result = QFont("Tahoma", 13);
+        break;
+    case ChartLastFont:
+        result = QFont("Tahoma", 16);
+        break;
+    }
+    return result;
+}
+
 QString Design::styleSheet(StyleKey key) const
 {
     QString result;

@@ -4,13 +4,6 @@
 
 #include <QDebug>
 
-static double getNan()
-{
-    unsigned long nan[2]={0xffffffff, 0x7fffffff};
-    double g = *( double* )nan;
-    return g;
-}
-
 static bool isNan(double x)
 {
 #if defined(_MSC_VER)

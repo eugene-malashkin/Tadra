@@ -58,10 +58,17 @@ public:
         QueryEditStyleSheet
     };
 
+    enum FontKey
+    {
+        ChartFont,
+        ChartLastFont
+    };
+
 public:
     Design();
     double size(SizeKey key) const;
     QColor color(ColorRey key) const;
+    QFont font(FontKey key) const;
     QString styleSheet(StyleKey key) const;
 };
 

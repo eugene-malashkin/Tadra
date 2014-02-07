@@ -1,12 +1,11 @@
 #include "floatroutine.h"
 #include <float.h>
 #include <math.h>
+#include <QtNumeric>
 
 double getNaN()
 {
-    unsigned long nan[2]={0xffffffff, 0x7fffffff};
-    double g = *( double* )nan;
-    return g;
+    return qSNaN();
 }
 
 bool isNaN(double x)

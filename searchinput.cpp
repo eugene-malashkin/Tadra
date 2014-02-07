@@ -48,7 +48,6 @@ void SearchInput::keyPressEvent(QKeyEvent *event)
 
 void SearchInput::onTextEdited(const QString &text)
 {
-    qDebug() << "text edited";
     // Запрос (текст без пробелов спереди и сзади)
     QString query = text.trimmed();
 

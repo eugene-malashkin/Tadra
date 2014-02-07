@@ -1,8 +1,11 @@
 #include "currencychartwidget.h"
 #include <QDomDocument>
+#include <float.h>
+#include <math.h>
 #include "floatroutine.h"
 #include "colorroutine.h"
 #include "numeral.h"
+#include "design.h"
 
 #include <QDebug>
 
@@ -16,7 +19,6 @@ static const QColor ChartUnchangedColor("#505050");
 static const QColor ChartFallColor("#bf0000");
 static const QColor ChartTextColor(Qt::white);
 static const QColor ChartScaleLineColor(Qt::gray);
-static const QFont ChartOtherFont("Arial", 8);
 static const double ChartFloatScaleMargin = 6;
 static const QColor ChartLineColor1(Qt::white);
 static const double ChartLineWidth1(5);
@@ -24,7 +26,6 @@ static const QColor ChartLineColor2("#008080");
 static const double ChartLineWidth2(1);
 static const double ChartLastMargin(8);
 static const double ChartLastHeight(24);
-static const QFont ChartLastFont("Arial", 12);
 static const QColor ChartLastTextColor(Qt::black);
 static const QColor ChartLastBgColor(Qt::white);
 static const int ChartMinimalMarkSpacing(10);
@@ -264,11 +265,15 @@ CurrencyChartWorkspace::CurrencyChartWorkspace(QObject *parent)
     , m_dateTimeScale()
     , m_floatScale()
 {
+    QFont font;
+    QFont scaleFont = Design::instance()->font(Design::ChartFont);
     m_dateTimeScale.setOrientation(Qt::Horizontal);
     m_dateTimeScale.setIntradayFlag(false);
     m_dateTimeScale.setMinimalMarkSpacing(ChartMinimalMarkSpacing);
+    m_dateTimeScale.setFont(scaleFont);
     m_floatScale.setOrientation(Qt::Vertical);
     m_floatScale.setMinimalMarkSpacing(ChartMinimalMarkSpacing);
+    m_floatScale.setFont(scaleFont);
 }
 
 void CurrencyChartWorkspace::setInstrument(const CurrencyInstrument &value)
@@ -387,7 +392,9 @@ void CurrencyChartWorkspace::paintDateTimeScale(QPainter *painter)
     linePen.setStyle(Qt::DashLine);
     QPen textPen(ChartTextColor);
 
-    QFontMetricsF fm(ChartOtherFont);
+    QFont font = Design::instance()->font(Design::ChartFont);
+    painter->setFont(font);
+    QFontMetricsF fm(font);
     DateTimeScaleMarkList markList = m_dateTimeScale.markList();
     foreach (const DateTimeScaleMark &mark, markList)
     {
@@ -406,8 +413,9 @@ void CurrencyChartWorkspace::paintFloatScale(QPainter *painter)
     linePen.setStyle(Qt::DashLine);
     QPen textPen(ChartTextColor);
 
-    QFontMetricsF fm(ChartOtherFont);
-
+    QFont font = Design::instance()->font(Design::ChartFont);
+    painter->setFont(font);
+    QFontMetricsF fm(font);
     FloatScaleMarkList markList = m_floatScale.markList();
     foreach (const FloatScaleMark &mark, markList)
     {
@@ -484,7 +492,7 @@ void CurrencyChartWorkspace::paintLast(QPainter *painter)
     QString text = Numeral::format(last);
     QRectF textRect(rect().right()-ChartFloatScaleWidth+ChartLastMargin, y-ChartLastHeight/2.0, ChartFloatScaleWidth-ChartLastMargin, ChartLastHeight);
     painter->setPen(ChartLastTextColor);
-    painter->setFont(ChartLastFont);
+    painter->setFont(Design::instance()->font(Design::ChartLastFont));
     painter->drawText(textRect, Qt::AlignCenter, text);
 }
 

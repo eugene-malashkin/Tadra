@@ -127,10 +127,10 @@ private:
         double worstScaleCoef() const;
     };
     LinearTransformation m_linearTransformation;
+    ExponentialTransformation m_exponentialTransformation;
     Qt::Orientation m_orientation;
     QFont m_font;
     double m_minimalMarkSpacing;
-    ExponentialTransformation m_exponentialTransformation;
     ScreenPoints m_screenPoints;
     FloatRange m_logicRange;
     bool m_requestUseExponentialTransformation;
