@@ -11,8 +11,8 @@ int main(int argc, char *argv[])
     //a.setStyleSheet(Design::instance()->styleSheet(Design::ApplicationStyle));
 
     // Устанавливаем проксирование для РБК
-    //QNetworkProxy proxy(QNetworkProxy::HttpProxy, "cache.rbc.ru", 3128);
-    //QNetworkProxy::setApplicationProxy(proxy);
+    QNetworkProxy proxy(QNetworkProxy::HttpProxy, "cache.rbc.ru", 3128);
+    QNetworkProxy::setApplicationProxy(proxy);
 
     // Загружаем сведения о валютных инструментах ЦБ РФ
     SearchEngine::instance()->loadInstruments();
